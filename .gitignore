@@ -1,0 +1,11 @@
+# Python-Umgebung und Zwischendateien
+.venv/
+__pycache__/
+*.pyc
+
+# Daten: Kernel-Quellcode, Datenbank, Modelle (werden aus dem Code neu erzeugt)
+data/
+
+# Editor und Betriebssystem
+.vscode/
+Thumbs.db
