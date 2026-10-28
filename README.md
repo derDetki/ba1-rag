@@ -48,13 +48,25 @@ Das Modell wird beim ersten Aufruf einmal geladen (einige Sekunden), danach daue
 
 ## Einrichtung (Windows, PowerShell)
 
+**Voraussetzungen:** Git und Python 3.13 (`py -3.13 --version` muss eine Version anzeigen; sonst `winget install Python.Python.3.13`). Alle Befehle in **PowerShell** ausführen, nicht in der Eingabeaufforderung (cmd).
+
 ```powershell
-git clone https://its-git.fh-salzburg.ac.at/fhs51270/ba1-rag.git
+git clone https://github.com/derDetki/ba1-rag.git
 cd ba1-rag
 py -3.13 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 ```
+
+Vorne in der Zeile muss jetzt `(.venv)` stehen. Bei jeder neuen PowerShell-Sitzung zuerst `cd ba1-rag` und `.\.venv\Scripts\Activate.ps1` ausführen.
+
+Falls `Activate.ps1` mit „Ausführung von Skripts ist deaktiviert“ abbricht, einmalig ausführen und danach erneut aktivieren:
+
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+```
+
+> Das Projekt liegt vorübergehend auf GitHub, weil das FH-GitLab (`https://its-git.fh-salzburg.ac.at/fhs51270/ba1-rag.git`) derzeit nicht erreichbar ist. Neue Versionen holen: `git pull`.
 
 **Mit NVIDIA-Grafikkarte:** `requirements.txt` enthält die PyTorch-Version für den Prozessor. Für die GPU danach PyTorch mit CUDA nachinstallieren, den passenden Befehl liefert https://pytorch.org/get-started (die RTX 5080 braucht eine aktuelle CUDA-Version), z. B.:
 
@@ -62,7 +74,13 @@ pip install -r requirements.txt
 pip install torch --index-url https://download.pytorch.org/whl/cu130 --force-reinstall
 ```
 
-Die Programme erkennen die Grafikkarte automatisch.
+Prüfen, ob die Grafikkarte erkannt wird (muss `True` und den Namen der Karte ausgeben):
+
+```powershell
+python -c "import torch; print(torch.cuda.is_available(), torch.cuda.get_device_name(0) if torch.cuda.is_available() else '')"
+```
+
+Die Programme nutzen die Grafikkarte dann automatisch.
 
 ### Kernel-Ausschnitt holen
 
@@ -80,12 +98,14 @@ Bei einer anderen Kernel-Version `v6.18` hier und in `config.py` ersetzen.
 ### Datenbank aufbauen und abfragen
 
 ```powershell
-python build_index.py --test     # nur 3 Dateien, ca. 30 s
+python build_index.py --test     # nur 3 Dateien, ca. 30 s – immer zuerst!
 python build_index.py            # vollständig
 python query.py "How does EEVDF pick the next task to run?"
 ```
 
-Beim ersten Start wird das Embedding-Modell (ca. 1,2 GB) heruntergeladen.
+**Zuerst immer den Testlauf.** Der GPU-Teil des Codes wurde bisher nur auf der CPU getestet. In der Ausgabe muss `Modell geladen (cuda, torch.float16)` stehen; steht dort `cpu`, wird die Grafikkarte nicht genutzt (siehe Prüfbefehl oben).
+
+Beim ersten Start wird das Embedding-Modell (ca. 1,2 GB) heruntergeladen. Warnungen zu `HF_TOKEN` und `symlinks` sind harmlos und können ignoriert werden.
 
 **Laufzeit vollständiger Scheduler-Ausschnitt:** ca. 107 Minuten auf einem Notebook-Prozessor (i7-8665U). Auf einer Grafikkarte deutlich schneller.
 
